@@ -8,6 +8,7 @@ import com.example.mvi_dog.utils.DataState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.net.UnknownHostException
 
 class DogRepository constructor(
     private val dogDao: DogDao,
@@ -27,7 +28,21 @@ class DogRepository constructor(
             val cacheDog = dogDao.get()
             emit(DataState.Success(cacheMapper.mapFromEntityList(cacheDog)))
         }catch (e: Exception){
-            emit(DataState.Error(e))
+           when (e){
+               is UnknownHostException ->{
+                   val cacheDogs = dogDao.get()
+                   if (cacheDogs.isEmpty()){
+                       emit(DataState.Error(java.lang.Exception("La tabla Dog se encuentra vacia, Conectece a internet ")))
+                   }else{
+                       emit(DataState.Success(cacheMapper.mapFromEntityList(cacheDogs)))
+                   }
+               }
+            }
+
+
+
+
+           // emit(DataState.Error(e))
         }
     }
 }
